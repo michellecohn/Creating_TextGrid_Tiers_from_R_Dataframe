@@ -2,7 +2,6 @@
 #
 #
 # Add annotations to existing TextGrid
-# IDS/ADS
 #
 # Extract info from .csvs --> Praat textgrids 
 # Loops over  .TextGrids in a directory, finds the matching filename in the .csv, 
