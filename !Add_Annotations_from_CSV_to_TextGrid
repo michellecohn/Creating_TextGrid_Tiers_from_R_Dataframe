@@ -1,0 +1,83 @@
+##############################################
+#
+#
+# Add annotations to existing TextGrid
+# IDS/ADS
+#
+# Extract info from .csvs --> Praat textgrids 
+# Loops over  .TextGrids in a directory, finds the matching filename in the .csv, 
+# and extracts the information from each column (in a defined list, textgrid_tiers = c("Language", "Task")
+#
+# WILL NEED: start/end time
+#
+# MC 11/8/21
+#
+###############################################
+
+### Load in each word start / end time; export as Praat TextGrid
+library(phonfieldwork)
+library(stringr)
+library(R.utils)
+
+# Pull in the .csv with the annotations
+input_dir = "/Users/michellecohn/Desktop/IDS_ADS/"
+setwd(input_dir)
+annotation_csv = read.csv("Data_Pitch1.2.csv", header = TRUE)
+
+# Input directory (where the textgrids are)
+input_dir = "/Users/michellecohn/Desktop/IDS_ADS/textgrids/"
+setwd(input_dir)
+txtfile_list = list.files(pattern = "*.TextGrid")
+n_textfiles = length(txtfile_list)
+
+##### Dynamically create textgrids
+# Define list of column names you want to extract --> Textgrid tiers
+textgrid_tiers = c("Language", "Task")
+n_textgrid_tiers = length(textgrid_tiers)
+
+for(itext in 1:n_textfiles){
+  curr_file = txtfile_list[itext]  
+  #curr_file_name = gsub(".TextGrid", "", curr_file)
+  
+  curr_file_subset = subset(annotation_csv, Filename == curr_file)
+    
+  ##### Initialize the textgrid (If you're not adding onto an existing one)
+  #max_time = max(curr_file_subset$time_end)
+  
+   textgrid_filename= sprintf("%s", curr_file) 
+   textgrid_pathandfilename = sprintf("%s%s", input_dir, textgrid_filename)
+  # create_empty_textgrid(max_time, tier_name = NULL,point_tier = NULL,
+  #                       input_dir,result_file_name = textgrid_filename) # initialize empty 
+
+    curr_df_names = names(curr_file_subset)
+    time_start_index = which(curr_df_names == "start")
+    time_end_index = which(curr_df_names == "end")
+    
+    # Loop through each "content" column --> separate TextGrid tier
+    for(itier in 1:n_textgrid_tiers){
+      curr_tier_name = textgrid_tiers[itier]
+      
+      content_index = which(curr_df_names == curr_tier_name)
+      # Rename to: content, time_start, time_end
+      names(curr_file_subset)[time_start_index] = "time_start"
+      names(curr_file_subset)[time_end_index] = "time_end"
+      names(curr_file_subset)[content_index] = "content"
+      
+      # Clean up dataframe & export to textgrid
+      curr_df_cleaned_up = curr_file_subset[,c(time_start_index, time_end_index, content_index)]
+      df_to_tier(curr_df_cleaned_up, textgrid_pathandfilename, tier_name = curr_tier_name, overwrite = TRUE) # add info to 
+      
+    }#endfor
+    
+}#endfor # FILE LOOP
+
+
+
+
+
+
+
+
+
+
+
